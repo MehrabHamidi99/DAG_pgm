@@ -31,7 +31,7 @@ def random_dag_generation(d: int, edge_prob: float, graph_mode: str) -> nx.DiGra
     return dag_graph, adj_matrix
 
 def visualize_graph(G: nx.Graph):
-    edge_labels = nx.get_edge_attributes(G,'weight') # key is edge, pls check for your case
+    edge_labels = nx.get_edge_attributes(G,'weight')
 
     pos = nx.spring_layout(G)
 
@@ -45,7 +45,7 @@ def simulate_variable(G: nx.Graph, n: int, sample_type: str, noise_scale: float 
 
     W = nx.to_numpy_array(G)
     d = W.shape[0]
-    
+
     X = np.zeros([n, d])
 
     topological_order = list(nx.topological_sort(G))
@@ -56,6 +56,8 @@ def simulate_variable(G: nx.Graph, n: int, sample_type: str, noise_scale: float 
         eta = X[:, ancesters].dot(W[ancesters, node]) # n x #p . #p x 1
 
         X[:, node] = np.random.normal(scale=noise_scale, size=n)
+
+    if sample_type
 
     return X
 
