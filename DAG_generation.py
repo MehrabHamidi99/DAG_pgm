@@ -27,13 +27,37 @@ def random_dag_generation(d: int, edge_prob: float, graph_mode: str) -> nx.DiGra
     
     dag_graph = nx.DiGraph(adj_matrix)
 
-
-
     assert nx.is_directed_acyclic_graph(dag_graph)
     return dag_graph, adj_matrix
 
 def visualize_graph(G: nx.Graph):
     edge_labels = nx.get_edge_attributes(G,'weight') # key is edge, pls check for your case
 
+    pos = nx.spring_layout(G)
+
     ax = nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+    plt.show()
+
+    return ax
+
+
+def simulate_variable(G: nx.Graph, n: int, sample_type: str, noise_scale: float = 1.0):
+
+    W = nx.to_numpy_array(G)
+    d = W.shape[0]
+    
+    X = np.zeros([n, d])
+
+    topological_order = list(nx.topological_sort(G))
+
+    for node in topological_order:
+        ancesters = list(G.predecessors(node)) #p
+
+        eta = X[:, ancesters].dot(W[ancesters, node]) # n x #p . #p x 1
+
+        X[:, node] = np.random.normal(scale=noise_scale, size=n)
+
+    return X
+
+        
 
