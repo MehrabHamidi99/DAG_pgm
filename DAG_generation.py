@@ -41,25 +41,33 @@ def visualize_graph(G: nx.Graph):
     return ax
 
 
-def simulate_variable(G: nx.Graph, n: int, sample_type: str, noise_scale: float = 1.0):
+def simulate_single_equation(X, w, scale, noise):
+    n = X.shape[0]
+    if noise == "gauss":
+        z = np.random.normal(scale = scale, size = n)
+    elif noise == "exp":
+        z = np.random.exponential(scale = scale, size = n)
+    elif noise == "gumbel":
+        z = np.random.gumbel(scale = scale, size = n)
+    elif noise == "uniform":
+        z = np.random.uniform(low = -scale, high = scale, size = n)
+    
+    return (X @ w) + z
+    
+def simulate_variable(G: nx.Graph, n: int, noise_type: str, noise_scale: float = 1.0):
 
     W = nx.to_numpy_array(G)
     d = W.shape[0]
-
     X = np.zeros([n, d])
+    scale_vec = np.ones(d) * noise_scale
 
     topological_order = list(nx.topological_sort(G))
 
     for node in topological_order:
         ancesters = list(G.predecessors(node)) #p
-
-        eta = X[:, ancesters].dot(W[ancesters, node]) # n x #p . #p x 1
-
-        X[:, node] = np.random.normal(scale=noise_scale, size=n)
-
-    if sample_type
+        # eta = X[:, ancesters].dot(W[ancesters, node]) # n x #p . #p x 1
+        X[:, node] = simulate_single_equation(X[:, ancesters], W[ancesters, node], scale_vec[node])
 
     return X
-
         
 
