@@ -18,7 +18,9 @@ def set_seed(seed=33):
 
 
 def random_dag_generation(d: int, edge_prob: float, graph_mode: str) -> nx.DiGraph:
-    
+    '''
+    TODO: expand ways in which we generate adjacency matrices for DAGs, currently a very narrow definition
+    '''
     adj_matrix = None
     if graph_mode == 'er':
         # prob = float(degree) / (d - 1)
@@ -42,6 +44,9 @@ def visualize_graph(G: nx.Graph):
 
 
 def simulate_single_equation(X, w, scale, noise):
+    '''
+    TODO: maybe add more types of noise?
+    '''
     n = X.shape[0]
     if noise == "gauss":
         z = np.random.normal(scale = scale, size = n)
