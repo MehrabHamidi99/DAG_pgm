@@ -84,6 +84,11 @@ def generate_single_dataset(G: nx.Graph, n: int, noise_type: str, noise_scale: f
     return simulate_variable(G, n, noise_type, noise_scale)
     
 def mix_datasets(datasets: List):
+    '''
+    The idea is to generate different datasets with generate_single_dataset() [potentially different noise types with the same underlying graph, 
+    or the same noise type with different graphs (could be a different weighted adjacency matrix but the same adjacency matrix, or a completely different
+    adjacency matrix)].
+    '''
     datasets = np.array(datasets)
     d = datasets[0].shape[0]
     for dataset in datasets:
