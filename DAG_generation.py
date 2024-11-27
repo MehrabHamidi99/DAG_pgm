@@ -32,6 +32,11 @@ def random_dag_generation(d: int, edge_prob: float, graph_mode: str) -> nx.DiGra
     assert nx.is_directed_acyclic_graph(dag_graph)
     return dag_graph, adj_matrix
 
+# TODO: generated weighted adjacency matrix from regular adjacency matrix
+def generate_weighted_adjacency_matrix(B, w_ranges):
+    W = None
+    return W
+
 def visualize_graph(G: nx.Graph):
     edge_labels = nx.get_edge_attributes(G,'weight')
 
@@ -74,5 +79,16 @@ def simulate_variable(G: nx.Graph, n: int, noise_type: str, noise_scale: float =
         X[:, node] = simulate_single_equation(X[:, ancesters], W[ancesters, node], scale_vec[node])
 
     return X
-        
+
+def generate_single_dataset(G: nx.Graph, n: int, noise_type: str, noise_scale: float):
+    return simulate_variable(G, n, noise_type, noise_scale)
+    
+def mix_datasets(datasets: List):
+    datasets = np.array(datasets)
+    d = datasets[0].shape[0]
+    for dataset in datasets:
+        assert dataset.shape[0] = d # ensure all graphs in the dataset have the same number of nodes
+    datasets.reshape(-1, d)
+    np.random.shuffle(datasets)
+    return datasets
 
