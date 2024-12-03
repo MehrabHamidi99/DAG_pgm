@@ -2,3 +2,6 @@ __pycache__/*
 */__pycache__
 scripts/*.out
 scripts/no_tears*
+scripts/*experiment*
+scripts/*.png
+scripts/*.csv
