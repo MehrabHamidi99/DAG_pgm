@@ -4,8 +4,9 @@ import re
 from tqdm import tqdm
 import pickle
 from typing import Dict, List, Tuple
+import random
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 # import torch
@@ -76,7 +77,7 @@ def simulate_variable(G: nx.Graph, n: int, noise_type: str, noise_scale: float =
     for node in topological_order:
         ancesters = list(G.predecessors(node)) #p
         # eta = X[:, ancesters].dot(W[ancesters, node]) # n x #p . #p x 1
-        X[:, node] = simulate_single_equation(X[:, ancesters], W[ancesters, node], scale_vec[node])
+        X[:, node] = simulate_single_equation(X[:, ancesters], W[ancesters, node], scale_vec[node], noise_type)
 
     return X
 
@@ -92,7 +93,7 @@ def mix_datasets(datasets: List):
     datasets = np.array(datasets)
     d = datasets[0].shape[0]
     for dataset in datasets:
-        assert dataset.shape[0] = d # ensure all graphs in the dataset have the same number of nodes
+        assert dataset.shape[0] == d # ensure all graphs in the dataset have the same number of nodes
     datasets.reshape(-1, d)
     np.random.shuffle(datasets)
     return datasets
