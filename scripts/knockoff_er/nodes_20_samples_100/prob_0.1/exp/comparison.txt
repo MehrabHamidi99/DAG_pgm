@@ -1,0 +1,36 @@
+{
+  "knockoff_selected_results": {
+    "0": {
+      "fdr": 0.8,
+      "tpr": 0.09523809523809523,
+      "fpr": 0.047337278106508875,
+      "structural_hamming_du": 27,
+      "nnz": 10
+    },
+    "1": {
+      "fdr": 0.8,
+      "tpr": 0.125,
+      "fpr": 0.04597701149425287,
+      "structural_hamming_du": 22,
+      "nnz": 10
+    }
+  },
+  "full_no_selection_results": {
+    "0": {
+      "fdr": 0.5151515151515151,
+      "tpr": 0.7619047619047619,
+      "fpr": 0.10059171597633136,
+      "structural_hamming_du": 22,
+      "nnz": 33
+    },
+    "1": {
+      "fdr": 0.696969696969697,
+      "tpr": 0.625,
+      "fpr": 0.13218390804597702,
+      "structural_hamming_du": 29,
+      "nnz": 33
+    }
+  },
+  "notears_time_knockoff_selected": 1.2290232181549072,
+  "notears_time_full_no_selection": 8.010925531387329
+}

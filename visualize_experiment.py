@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     parser_arg.add_argument('--num_samples', metavar='num_samples', required=True, type=int)
     parser_arg.add_argument('--prob', metavar='prob', required=True, type=float)
-
+    parser_arg.add_argument('--exp_mode', metavar='exp_mode', required=True, type=str)
     parser = vars(parser_arg.parse_args())
 
     graph_type = parser['graph_type']
@@ -47,7 +47,9 @@ if __name__ == '__main__':
     prob = parser['prob']
     noise_types = parser['noise_types']
 
-    save_path = f'no_tears_res_{graph_type}/nodes_{d}_samples_{n}/prob_{prob}/{noise_types}'
+    exp_mode = parser['exp_mode']
+
+    save_path = f'{exp_mode}_{graph_type}/nodes_{d}_samples_{n}/prob_{prob}/{noise_types}'
 
     W_est = np.loadtxt(f'{save_path}/W_est.csv', delimiter=',')
     show_graph_with_labels(W_est, f'{save_path}/w_est.png')
