@@ -5,3 +5,8 @@ scripts/no_tears*
 scripts/*experiment*
 scripts/*.png
 scripts/*.csv
+experiment*
+scripts/*.png
+scripts/*/*.png
+scripts/kncockoff_er/*
+scripts/kncockoff_er
