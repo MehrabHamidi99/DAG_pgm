@@ -6,9 +6,7 @@ import networkx as nx
 import time
 import sys
 
-# Add paths for Methods, Evaluation, and DAG_generation
-sys.path.append('/path/to/directory/containing/Methods')       # **Update this path**
-from Methods import notears_linear
+from ..Methods import notears_linear
 
 sys.path.append('/path/to/directory/containing/Evaluation')    # **Update this path**
 from Evaluation import count_accuracy
@@ -16,12 +14,14 @@ from Evaluation import count_accuracy
 sys.path.append('/path/to/directory/containing/DAG_generation')  # **Update this path**
 from DAG_generation import random_dag_generation, generate_single_dataset
 
-from julia.api import Julia
+from julia.api import Julia # type: ignore
 jl = Julia(compiled_modules=False)  # Initialize Julia with compiled modules disabled
 
-from knockoffspy import ko
+from knockoffspy import ko # type: ignore
 from scipy import linalg
 from sklearn.linear_model import Lasso
+
+raise Exception("TESTIng")
 
 def perform_knockoff_filtering(X, Y, groups, m=5, q=0.1):
     """
@@ -291,7 +291,7 @@ if __name__ == '__main__':
     comparison = {
         "knockoff_selected_results": results_selected,
         "full_no_selection_results": results_full,
-        "notears_time_knockoff_selected": notears_time_knockoff if S_union else None,
+        "notears_time_knockoff_selected": notears_time_knockoff if S_union else None, # type: ignore
         "notears_time_full_no_selection": notears_time_full
     }
     
