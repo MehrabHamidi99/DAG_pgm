@@ -10,3 +10,8 @@ scripts/*.png
 scripts/*/*.png
 scripts/kncockoff_er/*
 scripts/kncockoff_er
+gran_dag_play/output
+gran_dag_play/output/*
+gran_dag_play/exp/
+gran_dag_play/data/
+gran_dag_play/models/
