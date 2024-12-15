@@ -12,6 +12,15 @@ scripts/kncockoff_er/*
 scripts/kncockoff_er
 gran_dag_play/output
 gran_dag_play/output/*
-gran_dag_play/exp/
+gran_dag_play/exp/both_graphs/pns/*
+gran_dag_play/exp/both_graphs/to-dag/*
+gran_dag_play/exp/both_graphs/train/*.pkl
+gran_dag_play/exp/both_graphs/train/*.npy
+gran_dag_play/exp/risk_extrapolation/to-dag/*
+gran_dag_play/exp/risk_extrapolation/train/*.pkl
+gran_dag_play/exp/risk_extrapolation/train/*.npy
+gran_dag_play/exp/graph1/to-dag/*
+gran_dag_play/exp/graph1/train/*.pkl
+gran_dag_play/exp/graph1/train/*.npy
 gran_dag_play/data/
 gran_dag_play/models/

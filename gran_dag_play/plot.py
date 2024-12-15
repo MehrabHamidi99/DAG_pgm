@@ -108,7 +108,28 @@ def plot_adjacency(adjacency, gt_adjacency, exp_path, name=''):
     plt.savefig(os.path.join(exp_path, 'adjacency' + name + '.png'))
 
 
-def plot_learning_curves(not_nlls, aug_lagrangians, aug_lagrangians_ma, aug_lagrangians_val, nlls, nlls_val, exp_path):
+def plot_adjacency_intersections(learned_adjacency,gt_1,gt_2,exp_path, name=''):
+    intersection_adjacency = np.logical_and(gt_1,gt_2)
+    union_adjacency = np.logical_or(gt_1,gt_2)
+    plt.clf()
+    f, (ax1, ax2, ax3) = plt.subplots(ncols=3, nrows=1)
+    sns.heatmap(learned_adjacency, ax=ax1, cbar=False, vmin=-1, vmax=1, cmap="Blues_r", xticklabels=False, yticklabels=False)
+    sns.heatmap(intersection_adjacency, ax=ax2, cbar=False, vmin=-1, vmax=1, cmap="Blues_r", xticklabels=False, yticklabels=False)
+    sns.heatmap(union_adjacency, ax=ax3, cbar=False, vmin=-1, vmax=1, cmap="Blues_r", xticklabels=False, yticklabels=False)
+    ax1.set_title("Learned")
+    ax2.set_title("Intersection")
+    ax3.set_title("Union")
+    ax1.set_aspect('equal', adjustable='box')
+    ax2.set_aspect('equal', adjustable='box')
+    ax3.set_aspect('equal', adjustable='box')
+
+    plt.savefig(os.path.join(exp_path, 'adjacency' + name + '.png'))
+
+
+
+
+
+def plot_learning_curves(not_nlls, aug_lagrangians, aug_lagrangians_ma, aug_lagrangians_val, nlls, nlls_val, exp_path,variances=None):
     fig, ax1 = plt.subplots()
     aug_lagrangians_val = np.array(aug_lagrangians_val)
     ax1.plot(range(len(nlls)), nlls, color="orange", linewidth=1, label="NLL")
@@ -119,7 +140,9 @@ def plot_learning_curves(not_nlls, aug_lagrangians, aug_lagrangians_ma, aug_lagr
     ax1.plot(range(len(aug_lagrangians_ma)), aug_lagrangians_ma, color="k", linewidth=1, label="Augmented Lagrangian")
     ax1.plot(aug_lagrangians_val[:,0], aug_lagrangians_val[:,1], color="r", linewidth=1,
              label="Augmented Lagrangian on validation set")
-
+    
+    if variances is not None:
+        ax1.plot(range(len(variances)), variances, color="g", linewidth=1, label="Variance")
     ax1.set_xlabel("Iterations")
     ax1.set_ylim(bottom=0, top=2)
 

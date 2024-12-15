@@ -15,3 +15,5 @@ def dump(obj, exp_path, name, txt=False):
 
 def get_intersection_edges(mat1,mat2):
     return mat1*mat2
+
+

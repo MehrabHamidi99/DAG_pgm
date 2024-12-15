@@ -99,11 +99,11 @@ def compute_A_phi(model, norm="none", square=False):
         raise NotImplementedError
 
 
-def compute_jacobian_avg(model, data_manager, batch_size):
+def compute_jacobian_avg(model, data_loader, batch_size):
     jac_avg = torch.zeros(model.num_vars, model.num_vars)
 
     # sample
-    x, do_mask = data_manager.sample(batch_size)
+    x, _ = next(iter(data_loader))
     x.requires_grad = True
 
     # compute loss

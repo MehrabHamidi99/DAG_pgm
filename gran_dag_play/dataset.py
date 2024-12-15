@@ -18,11 +18,15 @@ class SyntheticDataset(Dataset):
             self.G2, self.A2 = load_graphs(g_path2)
         if not load_data:
             X1, self.sigmas1 = gaussian_anm(self.G, self.A, n_points, sem_type, sigma_min, sigma_max)
-            X2,self.sigmas2 = gaussian_anm(self.G2, self.A2, n_points, sem_type, sigma_min, sigma_max)
+            if g_path2 is not None:
+                X2,self.sigmas2 = gaussian_anm(self.G2, self.A2, n_points, sem_type, sigma_min, sigma_max)
             #concatenate X1 and X2 in the data with labels from which dataset they are from
             X1 = np.concatenate((X1, np.zeros((n_points, 1))), axis=1)
-            X2 = np.concatenate((X2, np.ones((n_points, 1))), axis=1)
-            self.X = np.concatenate((X1,X2), axis=0)
+            if g_path2 is not None:
+                X2 = np.concatenate((X2, np.ones((n_points, 1))), axis=1)
+                self.X = np.concatenate((X1,X2), axis=0)
+            else:
+                self.X = X1
 
         else:
             if mode == 'train':
@@ -30,9 +34,13 @@ class SyntheticDataset(Dataset):
             else:
                 data_path = data_path + "test_"
             X1 = np.load(data_path + "graph1.npy")
-            X2 = np.load(data_path + "graph2.npy")
-            self.X = np.concatenate((X1, X2), axis=0)
-            self.labels = np.concatenate((np.zeros(n_points), np.ones(n_points)), axis=0)
+            if g_path2 is not None:
+                X2 = np.load(data_path + "graph2.npy")
+                self.X = np.concatenate((X1, X2), axis=0)
+                self.labels = np.concatenate((np.zeros(n_points), np.ones(n_points)), axis=0)
+            else:
+                self.X = X1
+                self.labels = np.zeros(n_points)
 
 
     def __len__(self):
