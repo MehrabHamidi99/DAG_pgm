@@ -1,0 +1,20 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) Mila
+[=== Module miniconda/3 loaded ===]
++ srun python main.py --num-vars 10 --train --data-path data/ --g-path1 data/10_nodes_G1.gpickle --g-path2 data/10_nodes_G2.gpickle --g-path3 data/10_nodes_G3.gpickle --exp_path exp/10_nodes_3_graphs/ --output-ckpt models/ --sem_type non_linear_gaussian --sigma-min 0.4 --sigma-max 0.8 --load-data True --n_points 10000 --pns-thresh 0.75 --pns --to-dag --cam-pruning-cutoff 1e-6 1e-4 1e-2 --risk-extrapolation --beta 1.0 --num-layers 3 --hid-dim 16 --nonlin leaky-relu --epochs 30 --batch_size 128 --lr 0.0005 --num-train-iter 300000 --seed 40 --device cuda --stop-crit-win 100 --plot_freq 10000 --h-threshold 1e-8 --mu-init 1e-3 --lambda-init 0 --omega-lambda 1e-4 --omega-mu 0.9 --lr-reinit 1e-3 --edge-clamp-range 1e-4 --norm-prod paths
+/home/mila/a/ahmedm/.conda/envs/dag/lib/python3.9/site-packages/torch/__init__.py:1144: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Traceback (most recent call last):
+  File "/home/mila/a/ahmedm/DAG_pgm/gran_dag_play/main.py", line 140, in <module>
+    main()
+  File "/home/mila/a/ahmedm/DAG_pgm/gran_dag_play/main.py", line 112, in main
+    dataset_test = SyntheticDataset(args.n_points, args.g_path1, args.g_path2,args.g_path3, args.sem_type, args.sigma_min,
+  File "/home/mila/a/ahmedm/DAG_pgm/gran_dag_play/dataset.py", line 38, in __init__
+    X1 = np.load(data_path + "graph1.npy")
+  File "/home/mila/a/ahmedm/.conda/envs/dag/lib/python3.9/site-packages/numpy/lib/_npyio_impl.py", line 455, in load
+    fid = stack.enter_context(open(os.fspath(file), "rb"))
+FileNotFoundError: [Errno 2] No such file or directory: 'data/10_nodes_test_graph1.npy'
+srun: error: cn-c002: task 0: Exited with exit code 1
+srun: Terminating StepId=5770197.0
