@@ -17,6 +17,31 @@ from Visualization import visualize_dag, visualize_adjacency_matrices
 np.random.seed(42)
 
 
+def knockoff_feature_selection(X, y, fdr=0.1):
+    """Select features using knockoff filtering."""
+    print("\nPerforming feature selection using knockoff filtering...")
+    
+    # Generate covariance matrix (AR1 process with correlation 0.5)
+    Sigma = knockpy.dgp.AR1(p=X.shape[1], rho=0.1)
+    
+    # Knockoff filter
+    kfilter = KnockoffFilter(
+        ksampler='gaussian',
+        fstat='lasso',
+    )
+    
+    # Run knockoff filter to select significant features
+    rejections = kfilter.forward(
+        X=X,
+        y=y,  # Random target for unsupervised setting
+        Sigma=Sigma,
+        fdr=fdr
+    )    
+    selected_features = np.where(rejections == 1)[0]
+    
+    return selected_features
+
+
 def nodewise_knockoff_selection(X, fdr=0.1):
     """Perform knockoff-based parent selection for each node."""
     n, p = X.shape
@@ -37,8 +62,8 @@ def nodewise_knockoff_selection(X, fdr=0.1):
         target = X[:, j]
 
         # Standardize predictors
-        scaler = StandardScaler()
-        predictors = scaler.fit_transform(predictors)
+        # scaler = StandardScaler()
+        # predictors = scaler.fit_transform(predictors)
 
         # Generate covariance matrix (AR1 process with correlation 0.5)
         Sigma = knockpy.dgp.AR1(p=predictors.shape[1], rho=0.5)
@@ -81,8 +106,10 @@ def creates_cycle(edges, parent, child, p):
     except nx.NetworkXNoCycle:
         return False
 
-def save_results_and_plots(W_true, knockoff_edges, notears_edges, intersection_edges, save_dir):
+def save_results_and_plots(W_true, pred_list, save_dir):
     """Save results, plots, and metrics to the specified directory."""
+
+    knockoff_edges, notears_edges, intersection_edges, notears_knockoff_edges = pred_list
 
     # Create the directory if it doesn't exist
     os.makedirs(save_dir, exist_ok=True)
@@ -94,8 +121,8 @@ def save_results_and_plots(W_true, knockoff_edges, notears_edges, intersection_e
     np.savetxt(os.path.join(save_dir, "W_intersection.csv"), edges_to_adj_matrix(intersection_edges, W_true.shape[0]), delimiter=",")
 
     # List of predictions and titles
-    predictions = [knockoff_edges, notears_edges, intersection_edges]
-    titles = ["Knockoff Learned Adjacency Matrix", "NO TEARS Learned Adjacency Matrix", "Intersection Learned Adjacency Matrix"]
+    predictions = [knockoff_edges, notears_edges, intersection_edges, notears_knockoff_edges]
+    titles = ["Knockoff Learned Adjacency Matrix", "NO TEARS Learned Adjacency Matrix", "Intersection Learned Adjacency Matrix", "Knockoff then NoTEARS"]
 
     
     # Visualize and save DAGs
@@ -108,6 +135,7 @@ def save_results_and_plots(W_true, knockoff_edges, notears_edges, intersection_e
     metrics_knockoff = count_accuracy(W_true, edges_to_adj_matrix(knockoff_edges, W_true.shape[0]))
     metrics_notears = count_accuracy(W_true, edges_to_adj_matrix(notears_edges, W_true.shape[0]))
     metrics_intersection = count_accuracy(W_true, edges_to_adj_matrix(intersection_edges, W_true.shape[0]))
+    metrics_knoc_not = count_accuracy(W_true, edges_to_adj_matrix(notears_knockoff_edges, W_true.shape[0]))
 
     # Save all results in res.txt
     with open(os.path.join(save_dir, "res.txt"), "w") as f:
@@ -118,7 +146,10 @@ def save_results_and_plots(W_true, knockoff_edges, notears_edges, intersection_e
         f.write(str(metrics_notears) + "\n\n")
 
         f.write("Intersection Results:\n")
-        f.write(str(metrics_intersection) + "\n")
+        f.write(str(metrics_intersection) + "\n\n")
+
+        f.write("Knockoff followed by NOTEARS Results:\n")
+        f.write(str(metrics_knoc_not) + "\n")
 
 def edges_to_adj_matrix(edges, p):
     """Convert a list of edges to an adjacency matrix."""
@@ -154,9 +185,12 @@ if __name__ == "__main__":
     # Generate synthetic data
     g_dag, adj_dag = random_dag_generation(p, graph_prob, graph_type)
     X, W_true = generate_single_dataset(g_dag, n, noise_type, noise_scale, zeros=False, adj=True)
-    
+    # Create random sparse coefficients
+    beta = knockpy.dgp.create_sparse_coefficients(p=p, sparsity=fdr)
+    y = np.dot(X, beta) + np.random.randn(n)
+
     # Perform nodewise knockoff selection
-    knockoff_edges = nodewise_knockoff_selection(X, fdr=fdr)
+    knockoff_edges = nodewise_knockoff_selection(X, fdr=0.9)
 
     # Run NO TEARS
     W_notears = notears_linear(X, lambda1=lambda_val, loss_type='l2')
@@ -165,8 +199,19 @@ if __name__ == "__main__":
     # Compute intersection of knockoff and NO TEARS edges
     intersection_edges = list(set(knockoff_edges) & set(notears_edges))
 
+
+    # Perform feature selection using knockoff and run NO TEARS on selected features
+    selected_features = knockoff_feature_selection(X, y, fdr=fdr)
+    if len(selected_features) != 0:
+        X_selected = X[:, selected_features]
+    else:
+        X_selected = X
+    print(selected_features)
+    W_notears_knockoff = notears_linear(X_selected, lambda1=lambda_val, loss_type='l2')
+    notears_knockoff_edges = [(selected_features[i], selected_features[j]) for i in range(len(selected_features)) for j in range(len(selected_features)) if W_notears_knockoff[i, j] != 0]
+
     # Define save directory
-    save_dir = f"results/knockoff/samples_{n}_nodes_{p}_fdr_{fdr}/graph_type_{graph_type}_graph_prob_{graph_prob}_noise_type_{noise_type}_noise_scale_{noise_scale}_lambda_{lambda_val}"
+    save_dir = f"results/notears_knockoff/samples_{n}_nodes_{p}_fdr_{fdr}/graph_type_{graph_type}_graph_prob_{graph_prob}_noise_type_{noise_type}_noise_scale_{noise_scale}_lambda_{lambda_val}"
     
     # Save results and plots
-    save_results_and_plots(W_true, knockoff_edges, notears_edges, intersection_edges, save_dir)
+    save_results_and_plots(W_true, (knockoff_edges, notears_edges, intersection_edges, notears_knockoff_edges), save_dir)

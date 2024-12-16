@@ -5,17 +5,17 @@ cd ~/pgm_project/DAG_pgm/scripts/
 
 # Parameter arrays
 samples=(100 1000)
-nodes=(10 20 50)
-fdr_values=(0.05 0.1 0.9)
+nodes=(10 20 50 100)
+fdr_values=(0.1 0.9)
 graph_types=('er')
-graph_probs=(0.1 0.2 0.5)
+graph_probs=(0.1 0.2 0.35 0.5)
 noise_types=('gauss' 'exp' 'uniform')
 noise_scales=(0.1 1.0)
-lambda_vals=(0.0 0.1)
+lambda_vals=(0.0)
 
 
 # Create logs directory if it doesn't exist
-mkdir -p $SCRATH/logs
+mkdir -p $SCRATCH/logs
 
 # Submit jobs for all combinations of parameters
 for s in "${samples[@]}"; do

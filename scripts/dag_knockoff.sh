@@ -11,7 +11,7 @@ module load miniconda
 conda activate dag_pgm
 
 # Navigate to the script directory
-cd $SCRATH/pgm_results/
+cd $SCRATCH/pgm_results/
 
 # Run the Python script with the provided arguments
 python ~/pgm_project/DAG_pgm/dag_kncokoff.py --samples=${1} \
