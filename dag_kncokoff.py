@@ -153,7 +153,7 @@ if __name__ == "__main__":
 
     # Generate synthetic data
     g_dag, adj_dag = random_dag_generation(p, graph_prob, graph_type)
-    X, W_true = generate_single_dataset(g_dag, n, noise_type, noise_scale)
+    X, W_true = generate_single_dataset(g_dag, n, noise_type, noise_scale, zeros=False, adj=True)
     
     # Perform nodewise knockoff selection
     knockoff_edges = nodewise_knockoff_selection(X, fdr=fdr)

@@ -65,7 +65,7 @@ def simulate_single_equation(X, w, scale, noise):
     
     return (X @ w) + z
     
-def simulate_variable(G: nx.Graph, n: int, noise_type: str, noise_scale: float = 1.0, zeros:bool = False):
+def simulate_variable(G: nx.Graph, n: int, noise_type: str, noise_scale: float = 1.0, zeros:bool = True, adj: bool = False):
 
     W = nx.to_numpy_array(G)
     d = W.shape[0]
@@ -80,11 +80,13 @@ def simulate_variable(G: nx.Graph, n: int, noise_type: str, noise_scale: float =
     for node in topological_order:
         ancesters = list(G.predecessors(node)) #p
         X[:, node] = simulate_single_equation(X[:, ancesters], W[ancesters, node], scale_vec[node], noise_type)
+    if adj:
+        return X, W
+    else:
+        return X
 
-    return X, W
-
-def generate_single_dataset(G: nx.Graph, n: int, noise_type: str, noise_scale: float):
-    return simulate_variable(G, n, noise_type, noise_scale)
+def generate_single_dataset(G: nx.Graph, n: int, noise_type: str, noise_scale: float, zeros:bool = True, adj: bool = False):
+    return simulate_variable(G, n, noise_type, noise_scale, zeros=zeros, adj=adj)
     
 def mix_datasets(datasets: List):
     '''
