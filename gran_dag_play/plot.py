@@ -108,9 +108,12 @@ def plot_adjacency(adjacency, gt_adjacency, exp_path, name=''):
     plt.savefig(os.path.join(exp_path, 'adjacency' + name + '.png'))
 
 
-def plot_adjacency_intersections(learned_adjacency,gt_1,gt_2,exp_path, name=''):
+def plot_adjacency_intersections(learned_adjacency,gt_1,gt_2,exp_path, name='',gt_3=None):
     intersection_adjacency = np.logical_and(gt_1,gt_2)
     union_adjacency = np.logical_or(gt_1,gt_2)
+    if gt_3 is not None:
+        intersection_adjacency = np.logical_and(intersection_adjacency,gt_3)
+        union_adjacency = np.logical_or(union_adjacency,gt_3)
     plt.clf()
     f, (ax1, ax2, ax3) = plt.subplots(ncols=3, nrows=1)
     sns.heatmap(learned_adjacency, ax=ax1, cbar=False, vmin=-1, vmax=1, cmap="Blues_r", xticklabels=False, yticklabels=False)

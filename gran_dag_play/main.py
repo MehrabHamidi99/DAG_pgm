@@ -19,6 +19,7 @@ def main():
     parser.add_argument('--data-path', type=str, default='data/')
     parser.add_argument('--g-path1', type=str, default='data/G1.gpickle')
     parser.add_argument('--g-path2', type=str, default='data/G2.gpickle')
+    parser.add_argument('--g-path3', type=str, default=None)
     parser.add_argument('--exp_path', type=str, default='exp/')
     parser.add_argument('--output-ckpt', type=str, default='models/')
 
@@ -26,7 +27,7 @@ def main():
     parser.add_argument('--sigma-min', type=float, default=0.4)
     parser.add_argument('--sigma-max', type=float, default=0.8)
     parser.add_argument('--load-data', type=bool, default=True)
-    parser.add_argument('--n_points', type=int, default=1000)
+    parser.add_argument('--n_points', type=int, default=10000)
 
     parser.add_argument('--num-neighbors', type=int, default=None,
                         help='number of neighbors to select in PNS')
@@ -88,7 +89,7 @@ def main():
     args = parser.parse_args()
     print(args)
     if args.risk_extrapolation:
-         args.exp_path = args.exp_path + "risk_extrapolation/"
+         args.exp_path = args.exp_path + f"risk_extrapolation_beta_{args.beta}/"
     if torch.cuda.is_available() and args.device == 'cuda':
         torch.cuda.manual_seed(args.seed)
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
@@ -100,10 +101,15 @@ def main():
         G2,A2 = load_graphs(args.g_path2)
     else:
         G2,A2 = G1,A1
+    if args.g_path3 is not None:
+        G3,A3 = load_graphs(args.g_path3)
+    else:
+        G3,A3 = G1,A1
     gt_adjacency = get_intersection_edges(A1,A2)
-    dataset_train = SyntheticDataset(args.n_points, args.g_path1, args.g_path2, args.sem_type, args.sigma_min,
+    gt_adjacency = get_intersection_edges(gt_adjacency,A3)
+    dataset_train = SyntheticDataset(args.n_points, args.g_path1, args.g_path2, args.g_path3,args.sem_type, args.sigma_min,
                                 args.sigma_max, args.load_data, args.data_path,device=args.device,mode='train')
-    dataset_test = SyntheticDataset(args.n_points, args.g_path1, args.g_path2, args.sem_type, args.sigma_min,
+    dataset_test = SyntheticDataset(args.n_points, args.g_path1, args.g_path2,args.g_path3, args.sem_type, args.sigma_min,
                                 args.sigma_max, args.load_data, args.data_path,device=args.device,mode='test')
     train_loader = DataLoader(dataset_train, batch_size=args.batch_size, shuffle=True,generator=torch.Generator(device='cuda'))
     test_loader = DataLoader(dataset_test, batch_size=args.batch_size, shuffle=False,generator=torch.Generator(device='cuda'))
@@ -117,15 +123,15 @@ def main():
     else:
         num_neighbors = args.num_neighbors
     print("Making pns folder")
-    pns(model, train_loader, test_loader, num_neighbors, args.pns_thresh, args.exp_path, A1,A2)
+    pns(model, train_loader, test_loader, num_neighbors, args.pns_thresh, args.exp_path, A1,A2,A3)
 
 
     # learning loop
     if args.train:
-        train(model,gt_adjacency,A1,A2,train_loader,test_loader,args)
+        train(model,gt_adjacency,A1,A2,A3,train_loader,test_loader,args)
     # making it a DAG
     if args.to_dag:
-         to_dag(model,train_loader,A1,A2,args)
+         to_dag(model,train_loader,A1,A2,A3,args)
     
 
     

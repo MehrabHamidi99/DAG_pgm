@@ -36,7 +36,7 @@ def pns_(model_adj, train_loader, test_loader, num_neighbors, thresh):
     return model_adj
 
 
-def pns(model, train_loader, test_loader, num_neighbors, thresh, exp_path, A1,A2):
+def pns(model, train_loader, test_loader, num_neighbors, thresh, exp_path, A1,A2,A3):
     # Prepare path for saving results
     save_path = os.path.join(exp_path, "pns")
     if not os.path.exists(save_path):
@@ -56,7 +56,7 @@ def pns(model, train_loader, test_loader, num_neighbors, thresh, exp_path, A1,A2
     dump(timing, save_path, 'timing')
     np.save(os.path.join(save_path, "DAG"), model.adjacency.detach().cpu().numpy())
     # plot
-    plot_adjacency_intersections(model.adjacency.detach().cpu().numpy(), A1, A2, save_path, name='_pns_intersections')
+    plot_adjacency_intersections(model.adjacency.detach().cpu().numpy(), A1, A2, save_path, name='_pns_intersections',gt_3=A3)
     return model
 
 
@@ -64,7 +64,7 @@ def pns(model, train_loader, test_loader, num_neighbors, thresh, exp_path, A1,A2
 
 
 
-def train(model,gt_adjacency,adjacency1,adjacency2,train_loader,test_loader,args):
+def train(model,gt_adjacency,adjacency1,adjacency2,adjacency3,train_loader,test_loader,args):
     save_path = os.path.join(args.exp_path, 'train')
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -102,7 +102,12 @@ def train(model,gt_adjacency,adjacency1,adjacency2,train_loader,test_loader,args
             per_sample_loss = -log_like
             mean_loss_0 = torch.mean(per_sample_loss[mask_0]) if mask_0.any() else torch.tensor(0.0, device=per_sample_loss.device)
             mean_loss_1 = torch.mean(per_sample_loss[mask_1]) if mask_1.any() else torch.tensor(0.0, device=per_sample_loss.device)
-            group_means = torch.stack([mean_loss_0, mean_loss_1])
+            if args.g_path3 is not None:
+                mask_2 = (label == 2)
+                mean_loss_2 = torch.mean(per_sample_loss[mask_2]) if mask_2.any() else torch.tensor(0.0, device=per_sample_loss.device)
+                group_means = torch.stack([mean_loss_0, mean_loss_1,mean_loss_2])
+            else:
+                group_means = torch.stack([mean_loss_0, mean_loss_1])
             variance_of_means = torch.var(group_means, unbiased=True)
             variances.append(variance_of_means.item())
             loss += args.beta * variance_of_means
@@ -154,7 +159,7 @@ def train(model,gt_adjacency,adjacency1,adjacency2,train_loader,test_loader,args
         
         if iteration% args.plot_freq == 0:
             plot_adjacency(model.adjacency.detach().cpu().numpy(), gt_adjacency, args.exp_path)
-            plot_adjacency_intersections(model.adjacency.detach().cpu().numpy(), adjacency1, adjacency2, args.exp_path,name='_intersections')
+            plot_adjacency_intersections(model.adjacency.detach().cpu().numpy(), adjacency1, adjacency2, args.exp_path,name='_intersections',gt_3=adjacency3)
             if variances:
                 if variances == []:
                     variances = None
@@ -217,7 +222,7 @@ def train(model,gt_adjacency,adjacency1,adjacency2,train_loader,test_loader,args
 
             # plot
             plot_adjacency(model.adjacency.detach().cpu().numpy(), gt_adjacency, save_path)
-            plot_adjacency_intersections(model.adjacency.detach().cpu().numpy(), adjacency1, adjacency2, save_path,name='_intersections')
+            plot_adjacency_intersections(model.adjacency.detach().cpu().numpy(), adjacency1, adjacency2, save_path,name='_intersections',gt_3=adjacency3)
             if variances:
                 if len(variances)==0:
                     variances = None
@@ -228,7 +233,7 @@ def train(model,gt_adjacency,adjacency1,adjacency2,train_loader,test_loader,args
         
 
 
-def to_dag(model, train_loader, A1,A2, args, stage_name="to-dag"):
+def to_dag(model, train_loader, A1,A2,A3, args, stage_name="to-dag"):
     """
     1- If some entries of A_\phi == 0, also mask them (This can happen with stochastic proximal gradient descent)
     2- Remove edges (from weaker to stronger) until a DAG is obtained.
@@ -266,7 +271,7 @@ def to_dag(model, train_loader, A1,A2, args, stage_name="to-dag"):
     dump(args, save_path, 'opt')
     np.save(os.path.join(save_path, "DAG"), model.adjacency.detach().cpu().numpy())
     # plot adjacency
-    plot_adjacency_intersections(model.adjacency.detach().cpu().numpy(), A1, A2, save_path, name='_intersections')
+    plot_adjacency_intersections(model.adjacency.detach().cpu().numpy(), A1, A2, save_path, name='_intersections',gt_3=A3)
     return model
 
 
