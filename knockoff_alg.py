@@ -108,43 +108,103 @@ def knockoff_threshold(W, q):
         T = np.inf
     return T
 
-def perform_knockoff_filtering(X, q=0.5, alpha=0.01):
-    """
-    Perform knockoff filtering given data X to select variables.
 
+def perform_knockoff_filtering(X, Y, groups, m=5, q=0.1, own_imp=False):
+    """
+    Perform knockoff filtering using modelX_gaussian_group_knockoffs from knockoffspy.
+    
     Steps:
-    1. Construct knockoffs.
-    2. Fit Lasso to [X, X_knock].
-    3. Compute W_j = |beta_j| - |beta_{j+p}| where beta_j is coeff of X_j, beta_{j+p} is coeff of knockoff.
-    4. Apply knockoff threshold.
-    5. Return selected variables.
-
-    Parameters:
-    X: n x p data matrix
-    q: desired FDR level
-    alpha: regularization parameter for Lasso (can be adjusted)
-
+    1. Define groups for features.
+    2. Estimate mu and Sigma from X.
+    3. Generate model-X Gaussian group knockoffs for X.
+    4. Fit a Lasso model on [X, X_knock1, ..., X_knockm].
+    5. Compute W statistics: |beta_j| - median(|beta_knock1_j|, ..., |beta_knockm_j|).
+    6. Determine κ: which among original and knockoffs has the highest |beta|.
+    7. Apply mk_threshold to find the cutoff T.
+    8. Select variables where W_j >= T.
+    
     Returns:
-    selected: array of indices of selected variables
+    - selected: array of selected variable indices
     """
-    n, p = X.shape
-    X_knock = construct_equicorrelated_knockoffs(X)
+    
+    if not own_imp:
+        n, p = X.shape
+        num_groups = len(np.unique(groups))
+        
+        # Estimate mu and Sigma from X
+        mu = X.mean(axis=0)
+        Sigma = np.cov(X, rowvar=False)
+        
+        # Generate group knockoffs
+        solver = "maxent"  # Choices: "maxent", "mvr", "sdp", "equi"
+        try:
+            result = ko.modelX_gaussian_group_knockoffs(X, solver, groups, mu, Sigma, m=m, verbose=False)
+        except Exception as e:
+            print(f"Error generating knockoffs: {e}")
+            return np.array([])
+        
+        X_knock = result.Xko  # Shape: (n, p * m)
+        
+        # Fit Lasso on [X, X_knock]
+        XX = np.hstack([X, X_knock])
+        lasso = Lasso(alpha=0.01, fit_intercept=True)
+        lasso.fit(XX, Y)
+        beta_hat = lasso.coef_  # Shape: (p + p*m,)
+        
+        # Compute W statistics and κ
+        tau = np.zeros(p)
+        kappa = np.zeros(p, dtype=int)
+        
+        for j in range(p):
+            # Original feature coefficient
+            beta_original = np.abs(beta_hat[j])
+            
+            # Knockoff coefficients for feature j
+            knockoff_start = j + 1 + j * m
+            knockoff_end = knockoff_start + m
+            beta_knockoffs = np.abs(beta_hat[knockoff_start:knockoff_end])
+            
+            # Compute tau[j] as original - median of knockoffs
+            tau[j] = beta_original - np.median(beta_knockoffs)
+            
+            # Determine which has the maximum coefficient
+            all_betas = np.concatenate(([beta_original], beta_knockoffs))
+            max_idx = np.argmax(all_betas)
+            kappa[j] = max_idx  # 0 for original, 1 to m for knockoffs
+        
+        # Apply knockoff thresholding
+        try:
+            # mk_threshold expects lists
+            T = ko.mk_threshold(tau.tolist(), kappa.tolist(), m, q)
+        except Exception as e:
+            print(f"Error computing threshold: {e}")
+            return np.array([])
+        
+        # Select variables
+        selected = np.where(tau >= T)[0]
+        
+        return selected
 
-    # Fit Lasso on [X, X_knock]
-    XX = np.hstack([X, X_knock])
-    y = np.random.randn(n)  # In practice, you'd need a response variable or another criterion
-    # Since the user did not provide Y, we simulate a response.
-    # A real scenario: Y should be given or chosen based on domain knowledge.
 
-    model = Lasso(alpha=alpha, fit_intercept=True)
-    model.fit(XX, y)
-    beta = model.coef_
+    if own_imp:
+        n, p = X.shape
+        X_knock = construct_equicorrelated_knockoffs(X)
 
-    # Compute W statistics
-    W = np.abs(beta[:p]) - np.abs(beta[p:])
+        # Fit Lasso on [X, X_knock]
+        XX = np.hstack([X, X_knock])
+        y = np.random.randn(n)  # In practice, you'd need a response variable or another criterion
+        # Since the user did not provide Y, we simulate a response.
+        # A real scenario: Y should be given or chosen based on domain knowledge.
 
-    # Compute threshold and select variables
-    T = knockoff_threshold(W, q)
-    selected = np.where(W >= T)[0]
+        model = Lasso(alpha=alpha, fit_intercept=True)
+        model.fit(XX, y)
+        beta = model.coef_
 
-    return selected
+        # Compute W statistics
+        W = np.abs(beta[:p]) - np.abs(beta[p:])
+
+        # Compute threshold and select variables
+        T = knockoff_threshold(W, q)
+        selected = np.where(W >= T)[0]
+
+        return selected

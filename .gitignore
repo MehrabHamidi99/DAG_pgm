@@ -10,3 +10,7 @@ scripts/*.png
 scripts/*/*.png
 scripts/kncockoff_er/*
 scripts/kncockoff_er
+scripts/results
+scripts/results/*
+scripts/$SCRATH
+scripts/$SCRATH/*

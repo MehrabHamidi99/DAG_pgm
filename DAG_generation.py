@@ -65,21 +65,23 @@ def simulate_single_equation(X, w, scale, noise):
     
     return (X @ w) + z
     
-def simulate_variable(G: nx.Graph, n: int, noise_type: str, noise_scale: float = 1.0):
+def simulate_variable(G: nx.Graph, n: int, noise_type: str, noise_scale: float = 1.0, zeros:bool = False):
 
     W = nx.to_numpy_array(G)
     d = W.shape[0]
-    X = np.zeros([n, d])
+    if zeros:
+        X = np.zeros([n, d])
+    else:
+        X = np.random.randn(n, d)
     scale_vec = np.ones(d) * noise_scale
 
     topological_order = list(nx.topological_sort(G))
 
     for node in topological_order:
         ancesters = list(G.predecessors(node)) #p
-        # eta = X[:, ancesters].dot(W[ancesters, node]) # n x #p . #p x 1
         X[:, node] = simulate_single_equation(X[:, ancesters], W[ancesters, node], scale_vec[node], noise_type)
 
-    return X
+    return X, W
 
 def generate_single_dataset(G: nx.Graph, n: int, noise_type: str, noise_scale: float):
     return simulate_variable(G, n, noise_type, noise_scale)
