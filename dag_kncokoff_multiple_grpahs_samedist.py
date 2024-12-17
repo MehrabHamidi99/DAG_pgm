@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 import argparse
-from DAG_generation import random_dag_generation, generate_single_dataset
+from DAG_generation_gaurav import simulate_dag, simulate_linear_sem, simulate_parameter, mix_datasets
 from Methods import notears_linear
 from Evaluation import count_accuracy
 from Visualization import visualize_dag, visualize_adjacency_matrices
@@ -91,7 +91,9 @@ if __name__ == "__main__":
     parser.add_argument("--nodes", type=int, required=True, help="Number of nodes (variables)")
     parser.add_argument("--fdr", type=float, required=True, help="Target false discovery rate")
     parser.add_argument("--graph_type", type=str, required=True, choices=['er', 'ba', 'ws'], help="Graph type")
-    parser.add_argument("--graph_prob", type=float, required=True, help="Graph probability")
+    # parser.add_argument("--graph_prob", type=float, required=True, help="Graph probability")
+    parser.add_argument("--edges", type=int, required=True, help="Graph probability")
+
     parser.add_argument("--noise_type", type=str, required=True, choices=['gauss', 'exp', 'gumbel', 'uniform'], help="Noise type")
     parser.add_argument("--noise_scale", type=float, required=True, help="Noise scale")
     parser.add_argument("--lambda_val", type=float, required=True, help="Lambda value for NO TEARS")
@@ -101,30 +103,33 @@ if __name__ == "__main__":
 
     # Assign variables from arguments
     n = args.samples
-    p = args.nodes
+    d = args.nodes
     fdr = args.fdr
     graph_type = args.graph_type
-    graph_prob = args.graph_prob
+    s0 = args.edges
     noise_type = args.noise_type
     noise_scale = args.noise_scale
     lambda_val = args.lambda_val
     groups = args.groups
     seed = args.seed
 
+    print(args)
+
     # Set random seed
     np.random.seed(seed)
-    g_dag, adj_dag = random_dag_generation(p, graph_prob, graph_type)
+    B_true = simulate_dag(d, s0, graph_type = "ER")
     # Generate g graphs
     datasets, true_dags = [], []
     for _ in range(args.groups):
-        X, _ = generate_single_dataset(g_dag, n, noise_type, noise_scale, zeros=False, adj=True)
+        W_true = simulate_parameter(B_true)
+        X = simulate_linear_sem(W_true, n//2, noise_type)
         datasets.append(X)
-        true_dags.append(adj_dag)
+        true_dags.append(B_true)
 
     # Combine datasets and compute union and intersection of ground truth graphs
-    X_combined = np.vstack(datasets)
-    W_true_union = np.maximum.reduce(true_dags)
-    W_true_intersection = np.minimum.reduce(true_dags)
+    X_combined = mix_datasets(datasets)
+    W_true_union = B_true
+    W_true_intersection = B_true
 
     # Knockoff-based parent selection
     knockoff_edges = nodewise_knockoff_selection(X_combined, fdr=args.fdr)
@@ -137,8 +142,8 @@ if __name__ == "__main__":
     intersection_edges = list(set(knockoff_edges) & set(notears_edges))
 
     # Knockoff feature selection followed by NO TEARS
-    
-    beta = knockpy.dgp.create_sparse_coefficients(p=p, sparsity=fdr)
+    print("Knockoff followed by NoTears")    
+    beta = knockpy.dgp.create_sparse_coefficients(p=d, sparsity=fdr)
     y = np.dot(X_combined, beta)
 
     selected_features = knockoff_feature_selection(X_combined, y, fdr=fdr)
@@ -146,8 +151,10 @@ if __name__ == "__main__":
     W_notears_knockoff = notears_linear(X_selected, lambda1=args.lambda_val, loss_type='l2')
     notears_knockoff_edges = [(selected_features[i], selected_features[j]) for i in range(len(selected_features)) for j in range(len(selected_features)) if W_notears_knockoff[i, j] != 0]
 
+    print("Results")
+
     # Define save directory
-    save_dir = f"results_multiple/notears_knockoff_multiple_graphs/groups_{args.groups}_samples_{args.samples}_nodes_{args.nodes}_fdr_{args.fdr}_seed_{args.seed}"
+    save_dir = f"results_multiple/notears_knockoff_multiple_graphs_same_graphs/groups_{args.groups}_samples_{args.samples}_nodes_{args.nodes}_fdr_{args.fdr}_seed_{args.seed}"
     
     # Save results and plots
     save_results_and_plots(W_true_union, W_true_intersection, (knockoff_edges, notears_edges, intersection_edges, notears_knockoff_edges), save_dir)
