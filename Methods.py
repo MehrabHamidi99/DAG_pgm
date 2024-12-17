@@ -2,7 +2,9 @@ import numpy as np
 import scipy.linalg as slin
 import scipy.optimize as sopt
 from scipy.special import expit as sigmoid
-
+import knockpy
+from knockpy import KnockoffFilter
+from sklearn.preprocessing import StandardScaler
 
 def notears_linear(X, lambda1, loss_type, max_iter=100, h_tol=1e-8, rho_max=1e+16, w_threshold=0.3):
     """Solve min_W L(W; X) + lambda1 ‖W‖_1 s.t. h(W) = 0 using augmented Lagrangian.
@@ -85,6 +87,178 @@ def notears_linear(X, lambda1, loss_type, max_iter=100, h_tol=1e-8, rho_max=1e+1
     W_est[np.abs(W_est) < w_threshold] = 0
     return W_est
 
+
+
+def notears_knockoff_regularizer(X, lambda1, loss_type, fdr=0.1, max_iter=100, h_tol=1e-8, rho_max=1e+16, w_threshold=0.3):
+    """Solve min_W L(W; X) + lambda1 ‖W‖_1 s.t. h(W) = 0 using augmented Lagrangian.
+
+    Args:
+        X (np.ndarray): [n, d] sample matrix
+        lambda1 (float): l1 penalty parameter
+        loss_type (str): l2, logistic, poisson
+        max_iter (int): max num of dual ascent steps
+        h_tol (float): exit if |h(w_est)| <= htol
+        rho_max (float): exit if rho >= rho_max
+        w_threshold (float): drop edge if |weight| < threshold
+
+    Returns:
+        W_est (np.ndarray): [d, d] estimated DAG
+    """
+    def _loss(W):
+        """Evaluate value and gradient of loss."""
+        M = X @ W
+        if loss_type == 'l2':
+            R = X - M
+            loss = 0.5 / X.shape[0] * (R ** 2).sum()
+            G_loss = - 1.0 / X.shape[0] * X.T @ R
+        elif loss_type == 'logistic':
+            loss = 1.0 / X.shape[0] * (np.logaddexp(0, M) - X * M).sum()
+            G_loss = 1.0 / X.shape[0] * X.T @ (sigmoid(M) - X)
+        elif loss_type == 'poisson':
+            S = np.exp(M)
+            loss = 1.0 / X.shape[0] * (S - X * M).sum()
+            G_loss = 1.0 / X.shape[0] * X.T @ (S - X)
+        else:
+            raise ValueError('unknown loss type')
+        return loss, G_loss
+
+    def _h(W):
+        """Evaluate value and gradient of acyclicity constraint."""
+        E = slin.expm(W * W)  # (Zheng et al. 2018)
+        h = np.trace(E) - d
+        #     # A different formulation, slightly faster at the cost of numerical stability
+        #     M = np.eye(d) + W * W / d  # (Yu et al. 2019)
+        #     E = np.linalg.matrix_power(M, d - 1)
+        #     h = (E.T * M).sum() - d
+        G_h = E.T * W * 2
+        return h, G_h
+
+    def _adj(w):
+        """Convert doubled variables ([2 d^2] array) back to original variables ([d, d] matrix)."""
+        return (w[:d * d] - w[d * d:]).reshape([d, d])
+
+    
+    def _knockoff_penalty(W):
+        """Compute knockoff-based penalty for the adjacency matrix W."""
+        d = W.shape[0]
+        scaler = StandardScaler()
+        # X_std = scaler.fit_transform(X)
+
+        # Generate knockoff features for the dataset
+        Sigma = knockpy.dgp.AR1(p=d, rho=0.5)
+        kfilter = KnockoffFilter(ksampler='gaussian', fstat='lasso')
+        # Run knockoff filter to select significant features
+        # rejections = kfilter.forward(
+        #     X=X,
+        #     y=np.zeros(X.shape[0]),  # Random target for unsupervised setting
+        #     Sigma=Sigma,
+        #     fdr=0.1
+        # )
+
+        # Preliminaries - infer covariance matrix for MX
+        if Sigma is None and kfilter._mx:
+            Sigma, _ = utilities.estimate_covariance(X, 1e-2, shrinkage)
+            # Possible factor model approximation
+            if num_factors is not None and Sigma is not None:
+                kfilter.D, kfilter.U = utilities.estimate_factor(
+                    Sigma, num_factors=num_factors
+                )
+                Sigma = np.diag(kfilter.D) + np.dot(kfilter.U, kfilter.U.T)
+                kfilter.knockoff_kwargs['how_approx'] = 'factor'
+                kfilter.knockoff_kwargs['D'] = kfilter.D
+                kfilter.knockoff_kwargs['U'] = kfilter.U
+            else:
+                kfilter.D = None
+                kfilter.U = None
+        if not kfilter._mx:
+            Sigma = None
+
+
+        # Save objects
+        kfilter.X = X
+        kfilter.Xk = None
+        # Center if we are going to fit FX knockoffs
+        if kfilter.Xk is None and not kfilter._mx:
+            kfilter.X = kfilter.X - kfilter.X.mean(axis=0)
+        kfilter.y = None
+        kfilter.mu = None
+        kfilter.Sigma = Sigma
+        kfilter.groups = None
+        # for key in fstat_kwargs:
+        #     kfilter.fstat_kwargs[key] = fstat_kwargs[key]
+        # for key in knockoff_kwargs:
+        #     kfilter.knockoff_kwargs[key] = knockoff_kwargs[key]
+
+        # Save n, p, groups
+        n = X.shape[0]
+        p = X.shape[1]
+        if kfilter.groups is None:
+            kfilter.groups = np.arange(1, p + 1, 1)
+
+        recycle_up_to = None
+
+        # Parse recycle_up_to
+        if recycle_up_to is None:
+            pass
+        elif recycle_up_to < 1:
+            recycle_up_to = int(recycle_up_to * n)
+        else:
+            recycle_up_to = int(recycle_up_to)
+        kfilter.recycle_up_to = recycle_up_to
+
+        knockoffs = kfilter.sample_knockoffs()
+        S = kfilter.ksampler.fetch_S()
+
+        # Calculate knockoff statistics
+        W_flat = W.flatten()
+        W_knockoff = knockoffs @ W_flat.reshape(d, d)
+        knockoff_stats = np.abs(W_flat) - np.abs(S.flatten())
+
+        penalty = np.linalg.norm(knockoff_stats)
+
+        # # Penalty for weights below the threshold
+        # threshold = np.percentile(knockoff_stats, (1 - fdr) * 100)
+        # penalty = np.sum(np.maximum(0, threshold - knockoff_stats))
+
+        return penalty
+
+    def _func(w):
+        """Evaluate value and gradient of augmented Lagrangian for doubled variables ([2 d^2] array)."""
+        W = _adj(w)
+        loss, G_loss = _loss(W)
+        h, G_h = _h(W)
+
+        knockoff_penalty = _knockoff_penalty(W)
+
+        obj = loss + 0.5 * rho * h * h + alpha * h + lambda1 * w.sum() + 0.075 * knockoff_penalty
+        # print(obj)
+        G_smooth = G_loss + (rho * h + alpha) * G_h
+        g_obj = np.concatenate((G_smooth + lambda1, - G_smooth + lambda1), axis=None)
+        return obj, g_obj
+
+    n, d = X.shape
+    w_est, rho, alpha, h = np.zeros(2 * d * d), 1.0, 0.0, np.inf  # double w_est into (w_pos, w_neg)
+    bnds = [(0, 0) if i == j else (0, None) for _ in range(2) for i in range(d) for j in range(d)]
+    if loss_type == 'l2':
+        X = X - np.mean(X, axis=0, keepdims=True)
+    for _ in range(max_iter):
+        # print(_)
+        w_new, h_new = None, None
+        while rho < rho_max:
+            sol = sopt.minimize(_func, w_est, method='L-BFGS-B', jac=True, bounds=bnds)
+            w_new = sol.x
+            h_new, _ = _h(_adj(w_new))
+            if h_new > 0.25 * h:
+                rho *= 10
+            else:
+                break
+        w_est, h = w_new, h_new
+        alpha += rho * h
+        if h <= h_tol or rho >= rho_max:
+            break
+    W_est = _adj(w_est)
+    W_est[np.abs(W_est) < w_threshold] = 0
+    return W_est
 
 
 # # coding=utf-8

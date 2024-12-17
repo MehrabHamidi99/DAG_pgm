@@ -28,3 +28,5 @@ gran_dag_play/exp/graph1/train/*.pkl
 gran_dag_play/exp/graph1/train/*.npy
 gran_dag_play/data/
 gran_dag_play/models/
+results/
+scripts/results_multiple/
