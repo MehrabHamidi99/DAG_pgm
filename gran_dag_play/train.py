@@ -12,7 +12,7 @@ from sklearn.feature_selection import SelectFromModel
 
 EPSILON=1E-8
 
-def pns_(model_adj, train_loader, test_loader, num_neighbors, thresh):
+def pns_(model_adj, train_loader, test_loader, num_neighbors, thresh): # from https://github.com/kurowasan/GraN-DAG/blob/master/gran_dag/train.py
     """Preliminary neighborhood selection"""
     x_train, _ = next(iter(train_loader))
     x_test, _ = next(iter(test_loader))
@@ -36,7 +36,7 @@ def pns_(model_adj, train_loader, test_loader, num_neighbors, thresh):
     return model_adj
 
 
-def pns(model, train_loader, test_loader, num_neighbors, thresh, exp_path, A1,A2,A3):
+def pns(model, train_loader, test_loader, num_neighbors, thresh, exp_path, A1,A2,A3): #from https://github.com/kurowasan/GraN-DAG/blob/master/gran_dag/train.py
     # Prepare path for saving results
     save_path = os.path.join(exp_path, "pns")
     if not os.path.exists(save_path):
@@ -64,7 +64,7 @@ def pns(model, train_loader, test_loader, num_neighbors, thresh, exp_path, A1,A2
 
 
 
-def train(model,gt_adjacency,adjacency1,adjacency2,adjacency3,train_loader,test_loader,args):
+def train(model,gt_adjacency,adjacency1,adjacency2,adjacency3,train_loader,test_loader,args): # modified from https://github.com/kurowasan/GraN-DAG/blob/master/gran_dag/train.py
     save_path = os.path.join(args.exp_path, 'train')
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -218,6 +218,7 @@ def train(model,gt_adjacency,adjacency1,adjacency2,adjacency3,train_loader,test_
             dump(grad_norms, save_path, 'grad-norms')
             dump(grad_norm_ma[:iteration], save_path, 'grad-norm-ma')
             dump(timing, save_path, 'timing')
+            dump(nlls_val, save_path, 'nlls-val')
             np.save(os.path.join(save_path, "DAG"), model.adjacency.detach().cpu().numpy())
 
             # plot
@@ -233,7 +234,7 @@ def train(model,gt_adjacency,adjacency1,adjacency2,adjacency3,train_loader,test_
         
 
 
-def to_dag(model, train_loader, A1,A2,A3, args, stage_name="to-dag"):
+def to_dag(model, train_loader, A1,A2,A3, args, stage_name="to-dag"): # from https://github.com/kurowasan/GraN-DAG/blob/master/gran_dag/train.py
     """
     1- If some entries of A_\phi == 0, also mask them (This can happen with stochastic proximal gradient descent)
     2- Remove edges (from weaker to stronger) until a DAG is obtained.

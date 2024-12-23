@@ -1,0 +1,161 @@
+Namespace(num_vars=10, train=True, data_path='data/', g_path1='data/10_nodes_G1.gpickle', g_path2='data/10_nodes_G2.gpickle', g_path3='data/10_nodes_G3.gpickle', exp_path='exp/10_nodes_3_graphs/', output_ckpt='models/', sem_type='non_linear_gaussian', sigma_min=0.4, sigma_max=0.8, load_data=True, n_points=10000, num_neighbors=None, pns_thresh=0.75, pns=True, to_dag=True, jac_thresh=False, cam_pruning=False, cam_pruning_cutoff=['1e-6', '1e-4', '1e-2'], risk_extrapolation=True, beta=1.0, num_layers=3, hid_dim=16, nonlin='leaky-relu', epochs=30, batch_size=128, lr=0.0005, num_train_iter=300000, seed=40, device='cuda', stop_crit_win=100, plot_freq=10000, h_threshold=1e-08, mu_init=0.001, lambda_init=0.0, omega_lambda=0.0001, omega_mu=0.9, lr_reinit=0.001, edge_clamp_range=0.0001, norm_prod='paths', square_prod=False)
+Making pns folder
+PNS: num samples = 256, num nodes = 10
+PNS: node 0
+PNS: node 1
+PNS: node 2
+PNS: node 3
+PNS: node 4
+PNS: node 5
+PNS: node 6
+PNS: node 7
+PNS: node 8
+PNS: node 9
+PNS took 6.158499479293823s
+1
+Updated lambda to 2.3326873779296877e-06
+Updated lambda to 4.64630126953125e-06
+Updated mu to 0.01
+Updated lambda to 2.7639389038085937e-05
+Updated mu to 0.1
+Updated lambda to 0.00025690269470214844
+Updated mu to 1.0
+Updated lambda to 0.0025457210540771485
+Updated mu to 10.0
+Updated lambda to 0.0253957576751709
+Updated mu to 100.0
+Updated lambda to 0.25341928672790526
+Updated mu to 1000.0
+Updated lambda to 2.528886205673218
+Updated mu to 10000.0
+Updated lambda to 25.169114477157592
+Updated mu to 100000.0
+Updated lambda to 235.7404035396576
+Updated mu to 1000000.0
+Updated lambda to 819.3890851802826
+Updated lambda to 1139.8236554927826
+Updated lambda to 1387.7789777584076
+101
+Updated lambda to 1590.9116071529388
+Updated lambda to 1749.2215436763763
+Updated lambda to 1894.1800397701263
+Updated mu to 10000000.0
+Updated lambda to 2809.7073835201263
+Updated lambda to 3486.816148168564
+Updated lambda to 3935.0430768795013
+Updated lambda to 4364.196519262314
+Updated mu to 100000000.0
+Updated lambda to 6843.749741918564
+Updated lambda to 8751.098374731064
+Updated lambda to 10467.712144262314
+Updated lambda to 11612.121323949814
+Updated lambda to 12756.530503637314
+Updated mu to 1000000000.0
+201
+Updated lambda to 20385.925034887314
+Updated lambda to 26107.970933324814
+Updated lambda to 31830.016831762314
+Updated mu to 10000000000.0
+Updated lambda to 60440.24632394982
+Updated lambda to 79513.73265207482
+Updated lambda to 98587.21898019982
+Updated mu to 100000000000.0
+233
+Edges/thresh tensor(37.) 0.0
+Edges/thresh tensor(37.) 0.0001349802
+Edges/thresh tensor(37.) 0.00013954245
+Edges/thresh tensor(37.) 0.00015942159
+Edges/thresh tensor(37.) 0.00016512457
+Edges/thresh tensor(37.) 0.00018376225
+Edges/thresh tensor(37.) 0.00019297429
+Edges/thresh tensor(37.) 0.00020641522
+Edges/thresh tensor(37.) 0.00021874014
+Edges/thresh tensor(37.) 0.00022721864
+Edges/thresh tensor(37.) 0.0002345038
+Edges/thresh tensor(37.) 0.00023522852
+Edges/thresh tensor(37.) 0.0002355109
+Edges/thresh tensor(37.) 0.00029827765
+Edges/thresh tensor(37.) 0.00031271874
+Edges/thresh tensor(37.) 0.0003981446
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                                 : Sun Dec 15 22:31:40 2024
+Driver Version                            : 560.35.03
+CUDA Version                              : 12.6
+
+Attached GPUs                             : 1
+GPU 00000000:88:00.0
+    Accounting Mode                       : Enabled
+    Accounting Mode Buffer Size           : 4000
+    Accounted Processes
+        Process ID                        : 633289
+            GPU Utilization               : 11 %
+            Memory Utilization            : 0 %
+            Max memory usage              : 228 MiB
+            Time                          : 425402 ms
+            Is Running                    : 0
+
+Sun Dec 15 22:31:40 2024       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 560.35.03              Driver Version: 560.35.03      CUDA Version: 12.6     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  Quadro RTX 8000                On  |   00000000:88:00.0 Off |                    0 |
+| 33%   35C    P2             68W /  260W |       1MiB /  46080MiB |      3%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                                 : Sun Dec 15 22:31:40 2024
+Driver Version                            : 560.35.03
+CUDA Version                              : 12.6
+
+Attached GPUs                             : 1
+GPU 00000000:88:00.0
+    Accounting Mode                       : Enabled
+    Accounting Mode Buffer Size           : 4000
+    Accounted Processes
+        Process ID                        : 633289
+            GPU Utilization               : 11 %
+            Memory Utilization            : 0 %
+            Max memory usage              : 228 MiB
+            Time                          : 425402 ms
+            Is Running                    : 0
+
+Sun Dec 15 22:31:40 2024       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 560.35.03              Driver Version: 560.35.03      CUDA Version: 12.6     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  Quadro RTX 8000                On  |   00000000:88:00.0 Off |                    0 |
+| 33%   35C    P2             70W /  260W |       1MiB /  46080MiB |      3%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

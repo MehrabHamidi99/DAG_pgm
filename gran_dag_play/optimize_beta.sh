@@ -63,6 +63,7 @@ SQUARE_PROD_FLAG=""
 
 # Beta values for the loop
 betas=(
+    "0.0"
     "0.5"
     "1.0"
     "2.0"

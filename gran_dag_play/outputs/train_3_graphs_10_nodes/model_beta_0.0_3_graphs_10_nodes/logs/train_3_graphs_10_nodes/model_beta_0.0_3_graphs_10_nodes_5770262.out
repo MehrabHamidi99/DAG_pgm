@@ -1,0 +1,166 @@
+Namespace(num_vars=10, train=True, data_path='data/', g_path1='data/10_nodes_G1.gpickle', g_path2='data/10_nodes_G2.gpickle', g_path3='data/10_nodes_G3.gpickle', exp_path='exp/10_nodes_3_graphs/', output_ckpt='models/', sem_type='non_linear_gaussian', sigma_min=0.4, sigma_max=0.8, load_data=True, n_points=10000, num_neighbors=None, pns_thresh=0.75, pns=True, to_dag=True, jac_thresh=False, cam_pruning=False, cam_pruning_cutoff=['1e-6', '1e-4', '1e-2'], risk_extrapolation=True, beta=0.0, num_layers=3, hid_dim=16, nonlin='leaky-relu', epochs=30, batch_size=128, lr=0.0005, num_train_iter=300000, seed=40, device='cuda', stop_crit_win=100, plot_freq=10000, h_threshold=1e-08, mu_init=0.001, lambda_init=0.0, omega_lambda=0.0001, omega_mu=0.9, lr_reinit=0.001, edge_clamp_range=0.0001, norm_prod='paths', square_prod=False)
+Making pns folder
+PNS: num samples = 256, num nodes = 10
+PNS: node 0
+PNS: node 1
+PNS: node 2
+PNS: node 3
+PNS: node 4
+PNS: node 5
+PNS: node 6
+PNS: node 7
+PNS: node 8
+PNS: node 9
+PNS took 6.250683784484863s
+1
+Updated lambda to 2.3441314697265627e-06
+Updated lambda to 4.668235778808593e-06
+Updated mu to 0.01
+Updated lambda to 2.7861595153808594e-05
+Updated mu to 0.1
+Updated lambda to 0.00025846004486083983
+Updated mu to 1.0
+Updated lambda to 0.0025606298446655272
+Updated mu to 10.0
+Updated lambda to 0.025553717613220214
+Updated mu to 100.0
+Updated lambda to 0.25519849300384523
+Updated mu to 1000.0
+Updated lambda to 2.5478315496444703
+Updated mu to 10000.0
+Updated lambda to 25.35018445491791
+Updated mu to 100000.0
+Updated lambda to 212.07961560726164
+Updated lambda to 343.8774061346054
+Updated lambda to 441.34292127132414
+101
+Updated lambda to 515.0619459295273
+Updated lambda to 578.2905531072616
+Updated lambda to 634.7480726385116
+Updated lambda to 687.0094251775741
+Updated mu to 1000000.0
+Updated lambda to 1000.7682752752304
+Updated lambda to 1221.067042365074
+Updated lambda to 1406.0798597478865
+Updated lambda to 1554.8530531072615
+Updated lambda to 1681.6917371892928
+Updated lambda to 1803.7620496892928
+Updated mu to 10000000.0
+Updated lambda to 2662.068934454918
+201
+Updated lambda to 3234.273524298668
+Updated lambda to 3682.5004530096053
+Updated lambda to 4016.286463751793
+Updated lambda to 4321.462245001792
+Updated mu to 100000000.0
+Updated lambda to 6610.280604376792
+Updated lambda to 7945.424647345542
+Updated lambda to 9089.833827033042
+Updated lambda to 10043.508143439292
+Updated lambda to 10997.182459845542
+Updated mu to 1000000000.0
+Updated lambda to 17672.902674689292
+Updated lambda to 23394.948573126792
+Updated lambda to 27209.645838751792
+301
+Updated lambda to 31024.343104376792
+Updated mu to 10000000000.0
+Updated lambda to 50097.82943250179
+Updated lambda to 69171.31576062679
+Updated mu to 100000000000.0
+313
+Edges/thresh tensor(38.) 0.0
+Edges/thresh tensor(38.) 0.000104622595
+Edges/thresh tensor(38.) 0.00011538992
+Edges/thresh tensor(38.) 0.00013277846
+Edges/thresh tensor(38.) 0.00014679332
+Edges/thresh tensor(38.) 0.00015130306
+Edges/thresh tensor(38.) 0.00015529728
+Edges/thresh tensor(38.) 0.00018327891
+Edges/thresh tensor(38.) 0.00018737298
+Edges/thresh tensor(38.) 0.00019251279
+Edges/thresh tensor(38.) 0.00019601056
+Edges/thresh tensor(38.) 0.00020781
+Edges/thresh tensor(38.) 0.00021199536
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                                 : Sun Dec 15 22:48:04 2024
+Driver Version                            : 560.35.03
+CUDA Version                              : 12.6
+
+Attached GPUs                             : 1
+GPU 00000000:3B:00.0
+    Accounting Mode                       : Enabled
+    Accounting Mode Buffer Size           : 4000
+    Accounted Processes
+        Process ID                        : 3353544
+            GPU Utilization               : 12 %
+            Memory Utilization            : 0 %
+            Max memory usage              : 404 MiB
+            Time                          : 577052 ms
+            Is Running                    : 0
+
+Sun Dec 15 22:48:04 2024       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 560.35.03              Driver Version: 560.35.03      CUDA Version: 12.6     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  Tesla V100-SXM2-32GB           On  |   00000000:3B:00.0 Off |                    0 |
+| N/A   36C    P0             57W /  300W |       1MiB /  32768MiB |      7%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+
+======== GPU REPORT ========
+
+==============NVSMI LOG==============
+
+Timestamp                                 : Sun Dec 15 22:48:04 2024
+Driver Version                            : 560.35.03
+CUDA Version                              : 12.6
+
+Attached GPUs                             : 1
+GPU 00000000:3B:00.0
+    Accounting Mode                       : Enabled
+    Accounting Mode Buffer Size           : 4000
+    Accounted Processes
+        Process ID                        : 3353544
+            GPU Utilization               : 12 %
+            Memory Utilization            : 0 %
+            Max memory usage              : 404 MiB
+            Time                          : 577052 ms
+            Is Running                    : 0
+
+Sun Dec 15 22:48:04 2024       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 560.35.03              Driver Version: 560.35.03      CUDA Version: 12.6     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  Tesla V100-SXM2-32GB           On  |   00000000:3B:00.0 Off |                    0 |
+| N/A   36C    P0             57W /  300W |       1MiB /  32768MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
